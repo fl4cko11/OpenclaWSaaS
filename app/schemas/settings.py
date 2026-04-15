@@ -2,22 +2,28 @@ from pydantic import BaseModel
 
 
 class TelegramSettingsRequest(BaseModel):
-    id: int
+    id: str
     id_allowList: list[int]
     token: str
 
 
 class WhatsAPPSettingsRequest(BaseModel):
-    id: int
-    whatsapp_id_allowList: list[int]
+    id: str
+    whatsapp_id_allowList: list[str]
 
 
 class DiscordSettingsRequest(BaseModel):
-    id: int
+    id: str
     allowList: list[int]
     token: str
 
 
+class SlackSettingsRequest(BaseModel):
+    id: str
+    token: str
+    allowList: list[str] = []
+
+
 class MarkdownSettingsRequest(BaseModel):
-    id: int
-    answerList = list[str]
+    id: str
+    answerList: list[str]
