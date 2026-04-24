@@ -20,7 +20,7 @@ async def TelegramSettings(request: TelegramSettingsRequest):
     """
 
     user_id = request.user_id
-    allowList = request.allowList
+    allowList = ",".join(request.allowList)
     token = request.token
 
     if not token or len(token) < 10:
@@ -96,7 +96,7 @@ async def DiscordSettings(request: DiscordSettingsRequest):
     """
 
     user_id = request.user_id
-    allowList = request.allowList
+    allowList = ",".join(request.allowList)
     token = request.token
 
     if not token or len(token) < 10:
@@ -173,9 +173,9 @@ async def WhatsAppSettings(request: WhatsAPPSettingsRequest):
 
     user_id = request.user_id
     token = request.token
-    allowList = request.allowList
-    phNumId = request.phoneNumbId
-    busId = request.BusId
+    allowList = ",".join(request.allowList)
+    phNumId = ",".join(request.phoneNumbId)
+    busId = ",".join(request.BusId)
 
     container_name = f"openclaw-{user_id}"
 
@@ -269,7 +269,7 @@ async def SlackSettings(request: SlackSettingsRequest):
     token = request.token
     app_token = request.app_token
     signing_secret = request.signingSecret
-    allowList = request.allowList
+    allowList = ",".join(request.allowList)
 
     if not token or len(token) < 10:
         raise HTTPException(status_code=400, detail="Invalid token format")
