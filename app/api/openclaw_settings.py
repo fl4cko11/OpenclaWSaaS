@@ -7,29 +7,38 @@ from app.schemas.settings import (
     TelegramSettingsRequest,
     WhatsAPPSettingsRequest,
 )
+from app.services.docker import execute_docker_command
+from app.services.presets import readPreset
 
-from app.services.llm import llm_req
-from app.services.messangers import execute_docker_command
-
-router = APIRouter(prefix="/settings")
+settings_router = APIRouter(prefix="/settings")
 
 
-@router.post("/telegram")
+@settings_router.post("/telegram")
 async def TelegramSettings(request: TelegramSettingsRequest):
     """
     Обновляет токен Telegram в конфигурации OpenClaw через Docker.
     """
 
-    id = request.id
+    user_id = request.user_id
     allowList = request.id_allowList
     token = request.token
 
     if not token or len(token) < 10:
         raise HTTPException(status_code=400, detail="Invalid token format")
 
-    container_name = id
+    container_name = f"openclaw-{user_id}"
 
     commands = [
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.telegram.enabled",
+            "true",
+        ],
         [
             "docker",
             "exec",
@@ -47,8 +56,26 @@ async def TelegramSettings(request: TelegramSettingsRequest):
             "openclaw",
             "config",
             "set",
+            "channels.telegram.dmPolicy",
+            "allowlist",
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
             "channels.telegram.allowFrom",
             allowList,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "gateway",
+            "restart",
         ],
     ]
 
@@ -62,16 +89,20 @@ async def TelegramSettings(request: TelegramSettingsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/whatsapp")
-async def WhatsAppSettings(request: WhatsAPPSettingsRequest):
+@settings_router.post("/discord")
+async def DiscordSettings(request: DiscordSettingsRequest):
     """
     Обновляет токен Telegram в конфигурации OpenClaw через Docker.
     """
 
-    id = request.id
-    allowList = request.whatsapp_id_allowList
+    user_id = request.user_id
+    allowList = request.allowList
+    token = request.token
 
-    container_name = id
+    if not token or len(token) < 10:
+        raise HTTPException(status_code=400, detail="Invalid token format")
+
+    container_name = f"openclaw-{user_id}"
 
     commands = [
         [
@@ -81,37 +112,9 @@ async def WhatsAppSettings(request: WhatsAPPSettingsRequest):
             "openclaw",
             "config",
             "set",
-            "channels.whatsapp.allowFrom",
-            allowList,
+            "channels.discord.enabled",
+            "true",
         ],
-    ]
-
-    try:
-        for cmd in commands:
-            await execute_docker_command(cmd)
-        return {"status": "success", "message": "Telegram token updated successfully"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/discord")
-async def DiscordSettings(request: DiscordSettingsRequest):
-    """
-    Обновляет токен Telegram в конфигурации OpenClaw через Docker.
-    """
-
-    id = request.id
-    allowList = request.allowList
-    token = request.token
-
-    if not token or len(token) < 10:
-        raise HTTPException(status_code=400, detail="Invalid token format")
-
-    container_name = id
-
-    commands = [
         [
             "docker",
             "exec",
@@ -129,8 +132,26 @@ async def DiscordSettings(request: DiscordSettingsRequest):
             "openclaw",
             "config",
             "set",
+            "channels.discord.dmPolicy",
+            "allowlist",
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
             "channels.discord.allowFrom",
             allowList,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "gateway",
+            "restart",
         ],
     ]
 
@@ -144,66 +165,187 @@ async def DiscordSettings(request: DiscordSettingsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/markdown")
-async def MarkdownSettings(request: MarkdownSettingsRequest):
+@settings_router.post("/whatsapp")
+async def WhatsAppSettings(request: WhatsAPPSettingsRequest):
+    """
+    Обновляет токен Telegram в конфигурации OpenClaw через Docker.
+    """
 
-    id = request.id
-    answerList = request.answerList
+    user_id = request.user_id
+    token = request.token
+    allowList = request.whatsapp_id_allowList
+    phNumId = request.phoneNumbId
+    busId = request.BusId
 
-    mdList = [
-        "AGENTS.md",
-        "SOUL.md",
-        "TOOLS.md",
-        "IDENTITY.md",
-        "USER.md",
-        "HEARTBEAT.md",
-        "BOOTSTRAP.md",
-        "MEMORY.md",
-    ]
+    container_name = f"openclaw-{user_id}"
 
-    container_name = id
-
-    for i in range(min(len(answerList), len(mdList))):
-        messages = [{"role": "user", "content": answerList[i]}]
-        response = llm_req(messages)
-
-        cmd = [
+    commands = [
+        [
             "docker",
             "exec",
             container_name,
-            "bash",
-            "-c",
-            f"echo '{response}' > ~/.openclaw/workspace/context/{mdList[i]}",
-        ]
-        await execute_docker_command(cmd)
+            "openclaw",
+            "config",
+            "set",
+            "channels.whatsapp.enabled",
+            "true",
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.whatsapp.token",
+            token,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.whatsapp.phoneNumberId",
+            phNumId,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.whatsapp.businessAccountId",
+            busId,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.whatsapp.dmPolicy",
+            "allowlist",
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.whatsapp.allowFrom",
+            allowList,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "gateway",
+            "restart",
+        ],
+    ]
 
-    return {"status": "success", "message": "Markdown files updated successfully"}
+    try:
+        for cmd in commands:
+            await execute_docker_command(cmd)
+        return {"status": "success", "message": "Telegram token updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/slack")
+@settings_router.post("/slack")
 async def SlackSettings(request: SlackSettingsRequest):
     """
     Обновляет токен Slack в конфигурации OpenClaw через Docker.
     """
-    id = request.id
+    user_id = request.user_id
     token = request.token
+    app_token = request.app_token
+    signing_secret = request.signingSecret
     allowList = request.allowList
 
     if not token or len(token) < 10:
         raise HTTPException(status_code=400, detail="Invalid token format")
 
-    container_name = id
+    container_name = f"openclaw-{user_id}"
 
     commands = [
         [
-            "docker", "exec", container_name,
-            "openclaw", "config", "set",
-            "channels.slack.token", token,
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.slack.enabled",
+            "true",
         ],
         [
-            "docker", "exec", container_name,
-            "openclaw", "config", "set",
-            "channels.slack.allowFrom", allowList,
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.slack.botToken",
+            token,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.slack.appToken",
+            app_token,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.slack.signingSecret",
+            signing_secret,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.slack.dmPolicy",
+            "allowlist",
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.slack.allowFrom",
+            allowList,
+        ],
+        [
+            "docker",
+            "exec",
+            container_name,
+            "openclaw",
+            "config",
+            "set",
+            "channels.slack.commands.native",
+            "auto",
         ],
     ]
 
@@ -215,3 +357,48 @@ async def SlackSettings(request: SlackSettingsRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@settings_router.post("/markdown")
+async def MarkdownSettings(request: MarkdownSettingsRequest):
+    user_id = request.user_id
+    preset_id = request.preset_id
+
+    content = readPreset(preset_id)
+
+    if not content or len(content) < 8:
+        raise HTTPException(
+            status_code=400, detail="Preset content must contain at least 8 items"
+        )
+
+    container_name = f"openclaw-{user_id}"
+
+    filenames = [
+        "AGENTS.md",
+        "BOOTSTRAP.md",
+        "HEARTBEAT.md",
+        "IDENTITY.md",
+        "MEMORY.md",
+        "SOUL.md",
+        "TOOLS.md",
+        "USER.md",
+    ]
+
+    try:
+        for i, filename in enumerate(filenames):
+            file_content = content[i].replace('"', '\\"')
+            cmd = [
+                "docker",
+                "exec",
+                container_name,
+                "sh",
+                "-c",
+                f'echo "{file_content}" > /root/.openclaw/workspace/{filename}',
+            ]
+            await execute_docker_command(cmd)
+
+        return {"status": "success", "message": "Markdown files updated successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to update markdown files: {str(e)}"
+        )

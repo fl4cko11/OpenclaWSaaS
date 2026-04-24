@@ -1,29 +1,40 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 
 
+class ProvisionRequest(BaseModel):
+    user_id: UUID
+
+
 class TelegramSettingsRequest(BaseModel):
-    id: str
-    id_allowList: list[int]
-    token: str
-
-
-class WhatsAPPSettingsRequest(BaseModel):
-    id: str
-    whatsapp_id_allowList: list[str]
-
-
-class DiscordSettingsRequest(BaseModel):
-    id: str
+    user_id: UUID
     allowList: list[int]
     token: str
 
 
-class SlackSettingsRequest(BaseModel):
-    id: str
+class WhatsAPPSettingsRequest(BaseModel):
+    user_id: UUID
     token: str
+    phoneNumbId: int
+    BusId: int
+    allowList: list[str]
+
+
+class DiscordSettingsRequest(BaseModel):
+    user_id: UUID
+    token: str
+    allowList: list[int]
+
+
+class SlackSettingsRequest(BaseModel):
+    user_id: UUID
+    bot_token: str
+    app_token: str
+    signingSecret: str
     allowList: list[str] = []
 
 
 class MarkdownSettingsRequest(BaseModel):
-    id: str
-    answerList: list[str]
+    user_id: UUID
+    preset_id: int

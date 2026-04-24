@@ -1,1 +1,5 @@
 .openclawsaas
+openclawsaas
+dist/
+files/
+front_settings/
