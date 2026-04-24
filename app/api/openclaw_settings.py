@@ -80,8 +80,7 @@ async def TelegramSettings(request: TelegramSettingsRequest):
     ]
 
     try:
-        for cmd in commands:
-            await execute_docker_command(cmd)
+        await execute_docker_command(commands)
         return {"status": "success", "message": "Telegram token updated successfully"}
     except HTTPException:
         raise
@@ -156,8 +155,7 @@ async def DiscordSettings(request: DiscordSettingsRequest):
     ]
 
     try:
-        for cmd in commands:
-            await execute_docker_command(cmd)
+        await execute_docker_command(commands)
         return {"status": "success", "message": "Discord settings updated successfully"}
     except HTTPException:
         raise
@@ -251,8 +249,7 @@ async def WhatsAppSettings(request: WhatsAPPSettingsRequest):
     ]
 
     try:
-        for cmd in commands:
-            await execute_docker_command(cmd)
+        await execute_docker_command(commands)
         return {"status": "success", "message": "Telegram token updated successfully"}
     except HTTPException:
         raise
@@ -358,8 +355,7 @@ async def SlackSettings(request: SlackSettingsRequest):
     ]
 
     try:
-        for cmd in commands:
-            await execute_docker_command(cmd)
+        await execute_docker_command(commands)
         return {"status": "success", "message": "Slack settings updated successfully"}
     except HTTPException:
         raise
