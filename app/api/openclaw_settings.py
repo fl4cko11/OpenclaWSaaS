@@ -20,7 +20,7 @@ async def TelegramSettings(request: TelegramSettingsRequest):
     """
 
     user_id = request.user_id
-    allowList = request.id_allowList
+    allowList = request.allowList
     token = request.token
 
     if not token or len(token) < 10:
@@ -173,7 +173,7 @@ async def WhatsAppSettings(request: WhatsAPPSettingsRequest):
 
     user_id = request.user_id
     token = request.token
-    allowList = request.whatsapp_id_allowList
+    allowList = request.allowList
     phNumId = request.phoneNumbId
     busId = request.BusId
 
