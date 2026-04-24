@@ -30,7 +30,7 @@ async def provision(request: ProvisionRequest):
         "-v",
         f"{volume_name}:/root/.openclaw",
         "-v",
-        "/root/my-conrtol-ui:/app/dist/control-ui",
+        "/root/my-control-ui:/app/dist/control-ui",
         "ghcr.io/openclaw/openclaw:latest",
     ]
 
