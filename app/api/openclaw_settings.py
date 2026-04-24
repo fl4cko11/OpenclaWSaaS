@@ -396,12 +396,14 @@ async def MarkdownSettings(request: MarkdownSettingsRequest):
         for i, filename in enumerate(filenames):
             file_content = content[i].replace('"', '\\"')
             cmd = [
-                "docker",
-                "exec",
-                container_name,
-                "sh",
-                "-c",
-                f'echo "{file_content}" > /root/.openclaw/workspace/{filename}',
+                [
+                    "docker",
+                    "exec",
+                    container_name,
+                    "sh",
+                    "-c",
+                    f'echo "{file_content}" > /root/.openclaw/workspace/{filename}',
+                ]
             ]
             await execute_docker_command(cmd)
 

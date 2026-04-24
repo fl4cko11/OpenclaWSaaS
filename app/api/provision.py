@@ -16,22 +16,24 @@ async def provision(request: ProvisionRequest):
     volume_name = f"openclaw-data-{user_id}"
 
     cmd = [
-        "docker",
-        "run",
-        "-d",
-        "--name",
-        container_name,
-        "--user",
-        "root",
-        "--restart",
-        "unless-stopped",
-        "-p",
-        "18789:18789",
-        "-v",
-        f"{volume_name}:/root/.openclaw",
-        "-v",
-        "/root/my-control-ui:/app/dist/control-ui",
-        "ghcr.io/openclaw/openclaw:latest",
+        [
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            container_name,
+            "--user",
+            "root",
+            "--restart",
+            "unless-stopped",
+            "-p",
+            "18789:18789",
+            "-v",
+            f"{volume_name}:/root/.openclaw",
+            "-v",
+            "/root/my-control-ui:/app/dist/control-ui",
+            "ghcr.io/openclaw/openclaw:latest",
+        ]
     ]
 
     try:
