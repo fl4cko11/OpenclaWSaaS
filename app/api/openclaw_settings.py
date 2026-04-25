@@ -22,7 +22,7 @@ async def TelegramSettings(request: TelegramSettingsRequest):
     Обновляет настройки Telegram в конфигурации OpenClaw через batch-файл.
     """
     user_id = request.user_id
-    allowList = ",".join(str(item) for item in request.allowList)
+    allowList = request.allowList
     token = request.token
 
     if not token or len(token) < 10:
