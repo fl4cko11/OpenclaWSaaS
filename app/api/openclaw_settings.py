@@ -1,3 +1,6 @@
+import json
+import os
+
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.settings import (
@@ -16,9 +19,8 @@ settings_router = APIRouter(prefix="/settings")
 @settings_router.post("/telegram")
 async def TelegramSettings(request: TelegramSettingsRequest):
     """
-    Обновляет токен Telegram в конфигурации OpenClaw через Docker.
+    Обновляет настройки Telegram в конфигурации OpenClaw через batch-файл.
     """
-
     user_id = request.user_id
     allowList = ",".join(str(item) for item in request.allowList)
     token = request.token
@@ -27,65 +29,56 @@ async def TelegramSettings(request: TelegramSettingsRequest):
         raise HTTPException(status_code=400, detail="Invalid token format")
 
     container_name = f"openclaw-{user_id}"
+    batch_file = f"/tmp/openclaw_telegram_{user_id}.json"
 
-    commands = [
-        [
-            "docker",
-            "exec",
-            container_name,
-            "openclaw",
-            "config",
-            "set",
-            "channels.telegram.enabled",
-            "true",
-        ],
-        [
-            "docker",
-            "exec",
-            container_name,
-            "openclaw",
-            "config",
-            "set",
-            "channels.telegram.botToken",
-            token,
-        ],
-        [
-            "docker",
-            "exec",
-            container_name,
-            "openclaw",
-            "config",
-            "set",
-            "channels.telegram.allowFrom",
-            allowList,
-        ],
-        [
-            "docker",
-            "exec",
-            container_name,
-            "openclaw",
-            "config",
-            "set",
-            "channels.telegram.dmPolicy",
-            "allowlist",
-        ],
-        [
-            "docker",
-            "exec",
-            container_name,
-            "openclaw",
-            "gateway",
-            "restart",
-        ],
-    ]
+    batch_config = {
+        "channels.telegram.enabled": True,
+        "channels.telegram.botToken": token,
+        "channels.telegram.allowFrom": allowList,
+        "channels.telegram.dmPolicy": "allowlist",
+    }
 
     try:
+        with open(batch_file, "w") as f:
+            json.dump(batch_config, f, indent=2)
+
+        copy_cmd = [
+            [
+                "docker",
+                "cp",
+                batch_file,
+                f"{container_name}:/tmp/telegram_config.json",
+            ]
+        ]
+        await execute_docker_command([copy_cmd])
+
+        commands = [
+            [
+                "docker",
+                "exec",
+                container_name,
+                "openclaw",
+                "config",
+                "set",
+                "--batch-file",
+                "/tmp/telegram_config.json",
+            ],
+            ["docker", "exec", container_name, "openclaw", "gateway", "restart"],
+        ]
         await execute_docker_command(commands)
-        return {"status": "success", "message": "Telegram token updated successfully"}
+
+        return {
+            "status": "success",
+            "message": "Telegram settings updated successfully",
+        }
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(batch_file):
+            os.remove(batch_file)
 
 
 @settings_router.post("/discord")
