@@ -1,33 +1,30 @@
-# 1 - assistent; 2 - creative manager; 3 - Mentor; 4 - Product Manager; 5 - Research; 6 - Engineer
+import os
 
 
 def readPreset(preset_id: int):
 
-    content = []
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    preset_path = os.path.join(current_dir, "presets", str(preset_id))
 
-    with open(f"/app/services/presets/{preset_id}/AGENTS.md") as agentsMD:
-        agentsMD_content = agentsMD.read()
-        content.append(agentsMD_content)
-    with open(f"/app/services/presets/{preset_id}/BOOTSTRAP.md") as bootstrapMD:
-        bootstrapMD_content = bootstrapMD.read()
-        content.append(bootstrapMD_content)
-    with open(f"/app/services/presets/{preset_id}/HEARTBEAT.md") as heartbeatMD:
-        heartbeatMD_content = heartbeatMD.read()
-        content.append(heartbeatMD_content)
-    with open(f"/app/services/presets/{preset_id}/IDENTITY.md") as identityMD:
-        identityMD_content = identityMD.read()
-        content.append(identityMD_content)
-    with open(f"/app/services/presets/{preset_id}/MEMORY.md") as memoryMD:
-        memoryMD_content = memoryMD.read()
-        content.append(memoryMD_content)
-    with open(f"/app/services/presets/{preset_id}/SOUL.md") as soulMD:
-        souldMD_content = soulMD.read()
-        content.append(souldMD_content)
-    with open(f"/app/services/presets/{preset_id}/TOOLS.md") as toolsMD:
-        toolsMD_content = toolsMD.read()
-        content.append(toolsMD_content)
-    with open(f"/app/services/presets/{preset_id}/USER.md") as userMD:
-        userMD_content = userMD.read()
-        content.append(userMD_content)
+    content = []
+    filenames = [
+        "AGENTS.md",
+        "BOOTSTRAP.md",
+        "HEARTBEAT.md",
+        "IDENTITY.md",
+        "MEMORY.md",
+        "SOUL.md",
+        "TOOLS.md",
+        "USER.md",
+    ]
+
+    for filename in filenames:
+        filepath = os.path.join(preset_path, filename)
+
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"File not found: {filepath}")
+
+        with open(filepath, encoding="utf-8") as f:
+            content.append(f.read())
 
     return content
