@@ -9,7 +9,7 @@ class ProvisionRequest(BaseModel):
 
 class TelegramSettingsRequest(BaseModel):
     user_id: UUID
-    allowList: list[int]
+    allowList: list[str]
     token: str
 
 
@@ -24,7 +24,7 @@ class WhatsAPPSettingsRequest(BaseModel):
 class DiscordSettingsRequest(BaseModel):
     user_id: UUID
     token: str
-    allowList: list[int]
+    allowList: list[str]
 
 
 class SlackSettingsRequest(BaseModel):
