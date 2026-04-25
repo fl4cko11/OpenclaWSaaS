@@ -50,7 +50,7 @@ async def TelegramSettings(request: TelegramSettingsRequest):
                 f"{container_name}:/tmp/telegram_config.json",
             ]
         ]
-        await execute_docker_command([copy_cmd])
+        await execute_docker_command(copy_cmd)
 
         commands = [
             [
