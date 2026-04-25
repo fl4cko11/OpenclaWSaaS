@@ -31,12 +31,12 @@ async def TelegramSettings(request: TelegramSettingsRequest):
     container_name = f"openclaw-{user_id}"
     batch_file = f"/tmp/openclaw_telegram_{user_id}.json"
 
-    batch_config = {
-        "channels.telegram.enabled": True,
-        "channels.telegram.botToken": token,
-        "channels.telegram.allowFrom": allowList,
-        "channels.telegram.dmPolicy": "allowlist",
-    }
+    batch_config = [
+        {"path": "channels.telegram.enabled", "value": True},
+        {"path": "channels.telegram.botToken", "value": token},
+        {"path": "channels.telegram.allowFrom", "value": allowList},
+        {"path": "channels.telegram.dmPolicy", "value": "allowlist"},
+    ]
 
     try:
         with open(batch_file, "w") as f:
