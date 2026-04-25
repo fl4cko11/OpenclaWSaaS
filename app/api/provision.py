@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.settings import ProvisionRequest
-from app.services.docker import execute_docker_command
+from app.services.docker import execute_docker_command, get_free_port
 
 provision_router = APIRouter()
 
@@ -11,9 +11,13 @@ async def provision(request: ProvisionRequest):
     """
     Создаёт новый Docker-контейнер OpenClaw и возвращает его имя.
     """
+
     user_id = request.user_id
     container_name = f"openclaw-{user_id}"
     volume_name = f"openclaw-data-{user_id}"
+
+    host_port = get_free_port()
+    container_port = 18789
 
     cmd = [
         [
@@ -27,7 +31,7 @@ async def provision(request: ProvisionRequest):
             "--restart",
             "unless-stopped",
             "-p",
-            "18789:18789",
+            f"{host_port}:{container_port}",
             "-v",
             f"{volume_name}:/root/.openclaw",
             "-v",
@@ -38,8 +42,11 @@ async def provision(request: ProvisionRequest):
 
     try:
         await execute_docker_command(cmd)
-        return {"status": "success", "container_id": container_name}
-    except HTTPException:
-        raise
+        return {
+            "status": "success",
+            "container_name": container_name,
+            "port": host_port,
+            "url": f"http://<your-server-ip>:{host_port}",
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

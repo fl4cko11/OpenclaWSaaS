@@ -1,9 +1,24 @@
 import asyncio
+import random
+import socket
 
 from fastapi import HTTPException
 
 
+def get_free_port(start=10000, end=30000):
+    """Находит свободный порт в заданном диапазоне."""
+    while True:
+        port = random.randint(start, end)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("0.0.0.0", port))
+                return port
+            except OSError:
+                continue
+
+
 async def execute_docker_command(commands: list[list[str]]) -> list[str]:
+
     results = []
 
     for cmd in commands:
