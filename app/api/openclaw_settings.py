@@ -210,7 +210,7 @@ async def SlackSettings(request: SlackSettingsRequest):
     Обновляет настройки Slack в конфигурации OpenClaw через batch-файл.
     """
     user_id = request.user_id
-    token = request.token
+    token = request.bot_token
     app_token = request.app_token
     signing_secret = request.signingSecret
     allow_list = request.allowList
